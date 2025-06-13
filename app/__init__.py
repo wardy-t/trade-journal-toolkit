@@ -6,6 +6,8 @@ from app.models import db
 from config import Config
 from app.tools import checkdb
 
+import os
+
 migrate = Migrate()
 
 
