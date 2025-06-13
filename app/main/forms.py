@@ -1,5 +1,5 @@
-from wtforms import FloatField, StringField, SubmitField
-from wtforms.validators import InputRequired, Regexp, Optional
+from wtforms import FloatField, StringField, SubmitField, IntegerField, TextAreaField
+from wtforms.validators import InputRequired, Regexp, Optional, NumberRange
 from flask_wtf import FlaskForm
 
 letterregex = "^[a-zA-Z]+$"
@@ -18,6 +18,11 @@ class TradeForm(FlaskForm):
     num_shares = FloatField("No. of Shares")
     buy_price = FloatField("Buy Price")
     notes = StringField("Notes")
+    risk_amount = FloatField("Risk Amount", validators=[Optional()])
+    r_multiple = FloatField("R Multiple", validators=[Optional()])
+    setup_tag = StringField("Setup Tag", validators=[Optional()])
+    confidence_score = IntegerField("Confidence Score (1-5)", validators=[Optional(), NumberRange(min=1, max=5)])
+    review_notes = TextAreaField("Review Notes", validators=[Optional()])
     submit = SubmitField("Submit")
 
 
@@ -35,6 +40,11 @@ class UpdateTradeForm(FlaskForm):
     sell_date = StringField(id="datepick", validators=[Optional(), Regexp(dateregex)])
     sell_price = FloatField("Sell Price", default=0, validators=[Optional()])
     notes = StringField("Notes")
+    risk_amount = FloatField("Risk Amount", validators=[Optional()])
+    r_multiple = FloatField("R Multiple", validators=[Optional()])
+    setup_tag = StringField("Setup Tag", validators=[Optional()])
+    confidence_score = IntegerField("Confidence Score (1-5)", validators=[Optional(), NumberRange(min=1, max=5)])
+    review_notes = TextAreaField("Review Notes", validators=[Optional()])
     submit = SubmitField("Submit")
 
 

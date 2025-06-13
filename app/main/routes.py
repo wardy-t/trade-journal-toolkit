@@ -78,6 +78,11 @@ def add_trade():
             net_pnl=net_pnl,
             net_roi=net_roi,
             notes=form.notes.data,
+            risk_amount=form.risk_amount.data,
+            r_multiple=form.r_multiple.data,
+            setup_tag=form.setup_tag.data,
+            confidence_score=form.confidence_score.data,
+            review_notes=form.review_notes.data,
         )
 
         db.session.add(record)
@@ -146,6 +151,11 @@ def update_trade(ref):
             trade.sell_price = form.sell_price.data
             trade.position_size = round(form.num_shares.data * form.buy_price.data, 2)
             trade.notes = form.notes.data
+            trade.risk_amount = form.risk_amount.data
+            trade.r_multiple = form.r_multiple.data
+            trade.setup_tag = form.setup_tag.data
+            trade.confidence_score = form.confidence_score.data
+            trade.review_notes = form.review_notes.data
 
             if form.sell_price.data == 0:
                 trade.net_pnl = 0
