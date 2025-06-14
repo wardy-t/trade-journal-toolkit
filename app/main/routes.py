@@ -35,6 +35,35 @@ def index():
     winloss_labels = ["win", "loss"]
     winloss_values = [wins, loses]
 
+
+    # Filter only trades that have R-Multiple calculated
+    analyzed_trades = Trade.query.filter(
+        Trade.sell_price != 0.0,
+        Trade.r_multiple != None
+    ).all()
+
+    total_trades = len(analyzed_trades)
+    wins = len([t for t in analyzed_trades if t.r_multiple > 0])
+    losses = total_trades - wins
+
+    win_rate = round((wins / total_trades * 100), 2) if total_trades > 0 else 0
+    avg_r_multiple = round(sum(t.r_multiple for t in analyzed_trades) / total_trades, 2) if total_trades > 0 else 0
+
+    winning_r = [t.r_multiple for t in analyzed_trades if t.r_multiple > 0]
+    losing_r = [t.r_multiple for t in analyzed_trades if t.r_multiple <= 0]
+
+    avg_win_r = round(sum(winning_r) / len(winning_r), 2) if winning_r else 0
+    avg_loss_r = round(sum(losing_r) / len(losing_r), 2) if losing_r else 0
+
+    expectancy = round(((wins/total_trades) * avg_win_r) + ((losses/total_trades) * avg_loss_r), 2) if total_trades > 0 else 0
+
+    avg_confidence = round(sum(t.confidence_score for t in analyzed_trades if t.confidence_score) / total_trades, 2) if total_trades > 0 else 0
+
+    setup_counts = {}
+    for t in analyzed_trades:
+        if t.setup_tag:
+            setup_counts[t.setup_tag] = setup_counts.get(t.setup_tag, 0) + 1
+
     return render_template(
         "index.html",
         title="Trading Journal",
@@ -44,6 +73,13 @@ def index():
         latest_values=latest_values,
         opentrades=opentrades,
         closedtrades=closedtrades,
+            # Pass analytics data
+        total_trades=total_trades,
+        win_rate=win_rate,
+        avg_r_multiple=avg_r_multiple,
+        expectancy=expectancy,
+        avg_confidence=avg_confidence,
+        setup_counts=setup_counts
     )
 
 

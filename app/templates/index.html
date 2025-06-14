@@ -2,6 +2,45 @@
 {% block body %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.js"></script>
 
+<!-- ✅ New Analytics Block -->
+<div class="card shadow p-4 mb-5 bg-body rounded">
+    <h4 class="mb-3">Trading Analytics</h4>
+
+    <div class="row mb-3">
+        <div class="col">
+            <strong>Total Trades:</strong> {{ total_trades }}
+        </div>
+        <div class="col">
+            <strong>Win Rate:</strong> {{ win_rate }}%
+        </div>
+        <div class="col">
+            <strong>Avg R-Multiple:</strong> {{ avg_r_multiple }}
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col">
+            <strong>Expectancy:</strong> {{ expectancy }}
+        </div>
+        <div class="col">
+            <strong>Avg Confidence:</strong> {{ avg_confidence }}
+        </div>
+    </div>
+
+    <h5 class="mt-4">Setup Frequency:</h5>
+    <ul class="list-group list-group-flush">
+        {% for setup, count in setup_counts.items() %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ setup }}
+                <span class="badge bg-primary rounded-pill">{{ count }}</span>
+            </li>
+        {% else %}
+            <li class="list-group-item text-muted">No setups tagged yet</li>
+        {% endfor %}
+    </ul>
+</div>
+<!-- ✅ End Analytics Block -->
+
 <div style="width:100%;" class="row">
     <div class="my-4 col"><canvas id="piechart" style="width:100%; height:400px;"></canvas></div>
     <div class="my-4 col"><canvas id="barchart" style="width:100%; height:400px;"></canvas></div>
