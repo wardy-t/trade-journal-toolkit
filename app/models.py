@@ -23,6 +23,8 @@ class Trade(db.Model):
     setup_tag = db.Column(db.String(50))
     confidence_score = db.Column(db.Integer)
     review_notes = db.Column(db.Text)
+    failure_reasons = db.Column(db.String, default="")
+    success_reasons = db.Column(db.String, default="")
 
     def to_dict(self):
         return {
@@ -42,4 +44,6 @@ class Trade(db.Model):
             "setup_tag": self.setup_tag,
             "confidence_score": self.confidence_score,
             "review_notes": self.review_notes,
+            "failure_reasons": self.failure_reasons,
+            "success_reasons": self.success_reasons
         }

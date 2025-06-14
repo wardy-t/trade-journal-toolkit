@@ -1,4 +1,4 @@
-from wtforms import FloatField, StringField, SubmitField, IntegerField, TextAreaField
+from wtforms import FloatField, StringField, SubmitField, IntegerField, TextAreaField, SelectMultipleField
 from wtforms.validators import InputRequired, Regexp, Optional, NumberRange
 from flask_wtf import FlaskForm
 
@@ -24,6 +24,37 @@ class TradeForm(FlaskForm):
     confidence_score = IntegerField("Confidence Score (1-5)", validators=[Optional(), NumberRange(min=1, max=5)])
     review_notes = TextAreaField("Review Notes", validators=[Optional()])
     submit = SubmitField("Submit")
+    failure_reasons = SelectMultipleField(
+    "Failure Reasons",
+    choices=[
+        ("poor_entry", "Poor Entry"),
+        ("late_exit", "Late Exit"),
+        ("emotional_trade", "Emotional Trade"),
+        ("news_event", "News Event"),
+        ("ignored_plan", "Ignored Plan"),
+        ("bad_risk", "Poor Risk Management"),
+        ("slippage", "Slippage"),
+    ],
+    validators=[Optional()]
+    )
+    success_reasons = SelectMultipleField(
+    "Success Reasons",
+    choices=[
+        ("Good Setup", "Good Setup"),
+        ("Proper Risk Management", "Proper Risk Management"),
+        ("Trend Alignment", "Trend Alignment"),
+        ("Strong Entry Signal", "Strong Entry Signal"),
+        ("Disciplined Exit", "Disciplined Exit"),
+        ("News Catalyst", "News Catalyst"),
+        ("Volume Surge", "Volume Surge"),
+        ("Bounce Off Key Level", "Bounce Off Key Level"),
+        ("Mean Reversion", "Mean Reversion"),
+        ("High Conviction", "High Conviction"),
+    ],
+    validators=[Optional()],
+    coerce=str,
+    default=[]
+    )
 
 
 class UpdateTradeForm(FlaskForm):
@@ -46,6 +77,36 @@ class UpdateTradeForm(FlaskForm):
     confidence_score = IntegerField("Confidence Score (1-5)", validators=[Optional(), NumberRange(min=1, max=5)])
     review_notes = TextAreaField("Review Notes", validators=[Optional()])
     submit = SubmitField("Submit")
+    failure_reasons = SelectMultipleField(
+    "Failure Reasons",
+    choices=[
+        ("poor_entry", "Poor Entry"),
+        ("late_exit", "Late Exit"),
+        ("emotional_trade", "Emotional Trade"),
+        ("news_event", "News Event"),
+        ("ignored_plan", "Ignored Plan"),
+        ("bad_risk", "Poor Risk Management"),
+        ("slippage", "Slippage"),
+    ],
+    validators=[Optional()]
+    )
+    success_reasons = SelectMultipleField(
+    "Success Reasons",
+    choices=[
+        ("Good Setup", "Good Setup"),
+        ("Proper Risk Management", "Proper Risk Management"),
+        ("Trend Alignment", "Trend Alignment"),
+        ("Strong Entry Signal", "Strong Entry Signal"),
+        ("Disciplined Exit", "Disciplined Exit"),
+        ("News Catalyst", "News Catalyst"),
+        ("Volume Surge", "Volume Surge"),
+        ("Bounce Off Key Level", "Bounce Off Key Level"),
+        ("Mean Reversion", "Mean Reversion"),
+        ("High Conviction", "High Conviction"),
+    ],
+    coerce=str,
+    default=[]
+    )
 
 
 class RiskCalculator(FlaskForm):

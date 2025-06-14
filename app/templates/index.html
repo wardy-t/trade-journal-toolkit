@@ -38,6 +38,13 @@
             <li class="list-group-item text-muted">No setups tagged yet</li>
         {% endfor %}
     </ul>
+    <hr>
+    <h4>Rolling 20-Trade Analytics</h4>
+    <ul>
+        <li>Rolling Win Rate: {{ rolling_win_rate }}%</li>
+        <li>Rolling Avg R-Multiple: {{ rolling_avg_r }}</li>
+        <li>Rolling Expectancy: {{ rolling_expectancy }}</li>
+    </ul>
 </div>
 <!-- ✅ End Analytics Block -->
 
@@ -90,6 +97,100 @@
                         'rgb(33, 93, 110)',
                         'rgb(42, 72, 88)'
                     ]
+                }
+            ]
+        },
+        options: {
+            responsive: false
+        }
+    });
+
+</script>
+
+<div style="width:100%;" class="row">
+    <div class="my-4 col">
+        <canvas id="failurechart" style="width:100%; height:400px;"></canvas>
+    </div>
+</div>
+
+<script>
+    var failureLabels = {{ failure_labels | safe }};
+    var failureValues = {{ failure_values | safe }};
+
+    var ctxFailure = document.getElementById("failurechart").getContext("2d");
+    var failureChart = new Chart(ctxFailure, {
+        type: "pie",
+        data: {
+            labels: failureLabels,
+            datasets: [{
+                label: "Failure Reasons",
+                data: failureValues,
+                backgroundColor: [
+                    'rgb(255, 99, 132)', 'rgb(54, 162, 235)',
+                    'rgb(255, 206, 86)', 'rgb(75, 192, 192)',
+                    'rgb(153, 102, 255)', 'rgb(255, 159, 64)',
+                    'rgb(100, 181, 246)', 'rgb(244, 143, 177)',
+                    'rgb(129, 199, 132)', 'rgb(239, 83, 80)'
+                ]
+            }]
+        },
+        options: {
+            responsive: false
+        }
+    });
+</script>
+<div style="width:100%;" class="row">
+    <div class="my-4 col">
+        <canvas id="successchart" style="width:100%; height:400px;"></canvas>
+    </div>
+</div>
+
+<script>
+    var successLabels = {{ success_labels | safe }};
+    var successValues = {{ success_values | safe }};
+
+    var ctxSuccess = document.getElementById("successchart").getContext("2d");
+    var successChart = new Chart(ctxSuccess, {
+        type: "pie",
+        data: {
+            labels: successLabels,
+            datasets: [{
+                label: "Success Reasons",
+                data: successValues,
+                backgroundColor: [
+                    'rgb(54, 162, 235)', 'rgb(255, 206, 86)',
+                    'rgb(75, 192, 192)', 'rgb(255, 99, 132)',
+                    'rgb(153, 102, 255)', 'rgb(255, 159, 64)',
+                    'rgb(100, 181, 246)', 'rgb(244, 143, 177)',
+                    'rgb(129, 199, 132)', 'rgb(239, 83, 80)'
+                ]
+            }]
+        },
+        options: {
+            responsive: false
+        }
+    });
+</script>
+
+<div class="my-4 col">
+    <canvas id="equitycurve" style="width:100%; height:400px;"></canvas>
+</div>
+
+<script>
+    var ctx = document.getElementById("equitycurve").getContext("2d")
+    var equitychart = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: {{ equity_dates | safe }},
+            datasets: [
+                {
+                    label: "Equity Curve",
+                    data: {{ equity_curve | safe }},
+                    borderColor: "rgb(54, 162, 235)",
+                    backgroundColor: "rgba(54, 162, 235, 0.2)",
+                    fill: true,
+                    tension: 0.2,
+                    pointRadius: 2
                 }
             ]
         },
