@@ -31,6 +31,6 @@ def init_app(config_class=Config):
 
         app.register_blueprint(main_bp)
 
-        checkdb()
+        #checkdb()
 
         return app

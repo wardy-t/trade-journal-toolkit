@@ -35,6 +35,104 @@ def index():
     winloss_labels = ["win", "loss"]
     winloss_values = [wins, loses]
 
+
+    # Filter only trades that have R-Multiple calculated
+    analyzed_trades = Trade.query.filter(
+        Trade.sell_price != 0.0,
+        Trade.r_multiple != None
+    ).all()
+
+    total_trades = len(analyzed_trades)
+    wins = len([t for t in analyzed_trades if t.r_multiple > 0])
+    losses = total_trades - wins
+
+    win_rate = round((wins / total_trades * 100), 2) if total_trades > 0 else 0
+    avg_r_multiple = round(sum(t.r_multiple for t in analyzed_trades) / total_trades, 2) if total_trades > 0 else 0
+
+    winning_r = [t.r_multiple for t in analyzed_trades if t.r_multiple > 0]
+    losing_r = [t.r_multiple for t in analyzed_trades if t.r_multiple <= 0]
+
+    avg_win_r = round(sum(winning_r) / len(winning_r), 2) if winning_r else 0
+    avg_loss_r = round(sum(losing_r) / len(losing_r), 2) if losing_r else 0
+
+    expectancy = round(((wins/total_trades) * avg_win_r) + ((losses/total_trades) * avg_loss_r), 2) if total_trades > 0 else 0
+
+    avg_confidence = round(sum(t.confidence_score for t in analyzed_trades if t.confidence_score) / total_trades, 2) if total_trades > 0 else 0
+
+    setup_counts = {}
+    for t in analyzed_trades:
+            if t.setup_tag:
+                setup_counts[t.setup_tag] = setup_counts.get(t.setup_tag, 0) + 1
+
+        # Equity Curve generation (cumulative net_pnl sum)
+    equity_curve = []
+    cumulative = 0
+
+    # Sort trades by date to ensure proper time order
+    sorted_trades = sorted(analyzed_trades, key=lambda x: x.date)
+
+    for trade in sorted_trades:
+        cumulative += trade.net_pnl
+        equity_curve.append(round(cumulative, 2))
+        
+    # Also grab equity curve dates for chart
+    equity_dates = [trade.date.strftime(dateformat) for trade in sorted_trades]
+
+    # Rolling 20-trade analytics
+    rolling_trades = sorted(analyzed_trades, key=lambda x: x.date)[-20:]
+
+    rolling_total = len(rolling_trades)
+
+    if rolling_total > 0:
+        rolling_wins = len([t for t in rolling_trades if t.r_multiple > 0])
+        rolling_losses = rolling_total - rolling_wins
+
+        rolling_win_rate = round((rolling_wins / rolling_total) * 100, 2)
+        rolling_avg_r = round(sum(t.r_multiple for t in rolling_trades) / rolling_total, 2)
+
+        winning_r = [t.r_multiple for t in rolling_trades if t.r_multiple > 0]
+        losing_r = [t.r_multiple for t in rolling_trades if t.r_multiple <= 0]
+
+        avg_win_r = round(sum(winning_r) / len(winning_r), 2) if winning_r else 0
+        avg_loss_r = round(sum(losing_r) / len(losing_r), 2) if losing_r else 0
+
+        rolling_expectancy = round(
+            ((rolling_wins / rolling_total) * avg_win_r) + 
+            ((rolling_losses / rolling_total) * avg_loss_r), 2
+        )
+    else:
+        rolling_win_rate = 0
+        rolling_avg_r = 0
+        rolling_expectancy = 0
+
+    # Count failure reasons for trades with R-Multiple <= 0
+    failure_counts = {}
+
+    for trade in analyzed_trades:
+        if trade.r_multiple <= 0 and trade.failure_reasons:
+            reasons = trade.failure_reasons.split(",")
+            for reason in reasons:
+                reason = reason.strip()
+                if reason:
+                    failure_counts[reason] = failure_counts.get(reason, 0) + 1
+    
+        # ✅ Convert dict to lists for template rendering
+    failure_labels = list(failure_counts.keys())
+    failure_values = list(failure_counts.values())
+
+    success_counts = {}
+
+    for trade in analyzed_trades:
+        if trade.r_multiple > 0 and trade.success_reasons:
+            reasons = trade.success_reasons.split(",")
+            for reason in reasons:
+                reason = reason.strip()
+                if reason:
+                    success_counts[reason] = success_counts.get(reason, 0) + 1
+
+    success_labels = list(success_counts.keys())
+    success_values = list(success_counts.values())
+
     return render_template(
         "index.html",
         title="Trading Journal",
@@ -44,6 +142,25 @@ def index():
         latest_values=latest_values,
         opentrades=opentrades,
         closedtrades=closedtrades,
+            # Pass analytics data
+        total_trades=total_trades,
+        win_rate=win_rate,
+        avg_r_multiple=avg_r_multiple,
+        expectancy=expectancy,
+        avg_confidence=avg_confidence,
+        setup_counts=setup_counts,
+            # New equity curve data
+        equity_dates=equity_dates,
+        equity_curve=equity_curve,
+        # Rolling analytics
+        rolling_win_rate=rolling_win_rate,
+        rolling_avg_r=rolling_avg_r,
+        rolling_expectancy=rolling_expectancy,
+        # Failure reason counts
+        failure_labels=failure_labels,   
+        failure_values=failure_values,
+        success_labels=success_labels,
+        success_values=success_values 
     )
 
 
@@ -78,6 +195,13 @@ def add_trade():
             net_pnl=net_pnl,
             net_roi=net_roi,
             notes=form.notes.data,
+            risk_amount=form.risk_amount.data,
+            r_multiple=form.r_multiple.data,
+            setup_tag=form.setup_tag.data,
+            confidence_score=form.confidence_score.data,
+            review_notes=form.review_notes.data,
+            failure_reasons=",".join(form.failure_reasons.data),
+            success_reasons=",".join(form.success_reasons.data) 
         )
 
         db.session.add(record)
@@ -146,6 +270,13 @@ def update_trade(ref):
             trade.sell_price = form.sell_price.data
             trade.position_size = round(form.num_shares.data * form.buy_price.data, 2)
             trade.notes = form.notes.data
+            trade.risk_amount = form.risk_amount.data
+            trade.r_multiple = form.r_multiple.data
+            trade.setup_tag = form.setup_tag.data
+            trade.confidence_score = form.confidence_score.data
+            trade.review_notes = form.review_notes.data
+            trade.failure_reasons = ",".join(form.failure_reasons.data)
+            trade.success_reasons = ",".join(form.success_reasons.data)
 
             if form.sell_price.data == 0:
                 trade.net_pnl = 0
